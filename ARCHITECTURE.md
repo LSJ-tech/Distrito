@@ -104,6 +104,23 @@ futuro ligado a una acción del jugador: el módulo que origina la acción
 solo **consulta** (lectura), nunca **ordena** el gasto/cambio en otro
 manager; quien posee el estado reacciona al evento.
 
+## Decisión documentada: cobertura de servicios por conteo, no booleano (Etapa 6)
+
+`ServicesManager` guarda la cobertura como `Dictionary[ServiceType][Vector2i] -> int`
+(cuántos edificios de ese servicio cubren esa celda), no un booleano. Con un
+booleano, dos postas de salud superpuestas y demoler una dejaría la celda
+compartida "sin cobertura" aunque la otra posta siga ahí — bug de manual de
+cualquier sistema de cobertura acumulable. El conteo se incrementa al
+colocar y decrementa al demoler (limpiando la entrada en 0), así que
+superposiciones se resuelven correctamente sin rastrear qué edificio cubrió
+qué celda. `CoverageCalculator.calculate_coverage` usa distancia euclidiana
+(círculo), no un cuadrado de `radius`.
+
+**Visualización pendiente a propósito:** no hay overlay de cobertura ni
+panel de información todavía — eso es Etapa 8 ("interfaz"), no servicios.
+`get_coverage_at` ya está listo para que esa UI lo consuma cuando se
+construya.
+
 ## Decisión documentada: `class_name` en scripts de autoload
 
 Los scripts registrados como autoload (`EventBus`, `GridManager`,

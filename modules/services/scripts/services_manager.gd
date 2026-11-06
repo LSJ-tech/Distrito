@@ -7,10 +7,20 @@ extends Node
 var _coverage := CoverageCalculator.new()
 var _dispatcher := EmergencyDispatcher.new()
 
+## service_type (int) -> Dictionary[Vector2i, int]. Conteo, no booleano: así
+## si dos edificios del mismo servicio se superponen, demoler uno no le
+## quita cobertura a las celdas que el otro todavía cubre.
+var _coverage_counts: Dictionary = {}
+
+
+func _ready() -> void:
+	EventBus.building_placed.connect(_on_building_placed)
+	EventBus.building_demolished.connect(_on_building_demolished)
+
 
 func get_coverage_at(cell: Vector2i, service_type: GameEnums.ServiceType) -> bool:
-	# TODO Etapa 6: consultar cobertura calculada para `service_type` en `cell`.
-	return false
+	var cells: Dictionary = _coverage_counts.get(service_type, {})
+	return cells.get(cell, 0) > 0
 
 
 func trigger_emergency(emergency_type: GameEnums.EmergencyType, cell: Vector2i) -> void:
@@ -28,6 +38,26 @@ func load_save_data(data: Dictionary) -> void:
 	# TODO Etapa 8: reconstruir cobertura desde el save.
 	pass
 
-# TODO Etapa 6: conectar a EventBus.building_placed/demolished (edificios
-# cívicos) y recalcular cobertura con _coverage, emitiendo
-# EventBus.service_coverage_changed.
+
+func _on_building_placed(data: BuildingData, cell: Vector2i) -> void:
+	if data is CivicBuildingData:
+		_apply_coverage(data, cell, 1)
+
+
+func _on_building_demolished(data: BuildingData, cell: Vector2i) -> void:
+	if data is CivicBuildingData:
+		_apply_coverage(data, cell, -1)
+
+
+func _apply_coverage(data: CivicBuildingData, origin: Vector2i, delta: int) -> void:
+	var center := origin + data.footprint / 2
+	var cells := _coverage.calculate_coverage(center, data.service_radius)
+	var type_map: Dictionary = _coverage_counts.get(data.service_type, {})
+	for cell in cells:
+		var count: int = type_map.get(cell, 0) + delta
+		if count <= 0:
+			type_map.erase(cell)
+		else:
+			type_map[cell] = count
+	_coverage_counts[data.service_type] = type_map
+	EventBus.service_coverage_changed.emit(data.service_type)

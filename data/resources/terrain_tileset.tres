@@ -1,9 +1,15 @@
-[gd_resource type="TileSet" load_steps=3 format=3]
+[gd_resource type="TileSet" load_steps=5 format=3]
 
 [ext_resource type="Texture2D" path="res://assets/sprites/terrain/grass_tile.svg" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/terrain/road_tile.svg" id="2"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_grass"]
 texture = ExtResource("1")
+texture_region_size = Vector2i(64, 32)
+0:0/0 = 0
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_road"]
+texture = ExtResource("2")
 texture_region_size = Vector2i(64, 32)
 0:0/0 = 0
 
@@ -12,3 +18,4 @@ tile_shape = 1
 tile_layout = 5
 tile_size = Vector2i(64, 32)
 sources/0 = SubResource("TileSetAtlasSource_grass")
+sources/1 = SubResource("TileSetAtlasSource_road")

@@ -8,6 +8,7 @@ extends RefCounted
 
 var terrain_type: StringName = &"grass"
 var building_id: StringName = &""
+var building_origin: Vector2i = Vector2i(-1, -1)
 var has_road: bool = false
 var is_accessible: bool = false
 

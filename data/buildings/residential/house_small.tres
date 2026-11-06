@@ -1,6 +1,7 @@
-[gd_resource type="Resource" script_class="ResidentialBuildingData" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="ResidentialBuildingData" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://data/resources/residential_building_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/buildings/residential_placeholder.svg" id="2"]
 
 [resource]
 script = ExtResource("1")
@@ -11,4 +12,5 @@ footprint = Vector2i(1, 1)
 cost = 500
 maintenance_cost = 10
 requires_road_adjacency = true
+icon = ExtResource("2")
 population_capacity = 4

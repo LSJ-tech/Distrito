@@ -61,6 +61,33 @@ garantizado antes de que termine el árbol completo. Con el `tile_set` fijo
 en la escena, está disponible desde que el nodo existe, sin depender de
 ningún orden de ejecución.
 
+## Decisión documentada: grupos de nodos asignados por código (Etapa 3)
+
+`BuildingManager`, `BuildingPlacer` y `DemolitionHandler` (autoload uno,
+nodos de escena los otros dos) necesitan ubicar `TerrainLayer` y
+`BuildingsLayer` sin una ruta fija, porque `BuildingManager` no tiene
+posición en el árbol de escena. Se usan grupos (`get_tree().get_first_node_in_group(...)`).
+**Los grupos se registran por código** (`add_to_group(...)` en
+`world.gd::_ready()`), no escritos a mano como `groups = [...]` en el
+`.tscn`: esa sintaxis escrita manualmente no funcionó (se verificó con
+`get_groups()` devolviendo `[]` en runtime) — el formato de texto que
+Godot usa para grupos asignados desde el editor no es la simple asignación
+de propiedad que parece. Cualquier grupo nuevo se agrega con
+`add_to_group()` en el `_ready()` del nodo dueño, nunca escribiendo
+`groups = [...]` directamente en un `.tscn`.
+
+## Decisión documentada: `add_child()` antes de `set_data()` (Etapa 3)
+
+`BuildingManager._instantiate_building` llama `_buildings_layer().add_child(instance)`
+**antes** de `instance.set_data(data)`. Es el orden contrario al que
+parecía natural y causó un bug real: `BuildingInstance` usa
+`@onready var _sprite: Sprite2D = $Sprite2D`, que solo se resuelve cuando
+el nodo entra al árbol (`_ready()`); llamar `set_data()` sobre una
+instancia recién creada con `PackedScene.instantiate()` pero todavía no
+añadida a la escena deja `_sprite` en `null`. Cualquier método que dependa
+de `@onready` en un nodo recién instanciado debe llamarse después de
+`add_child()`, nunca antes.
+
 ## Decisión documentada: `class_name` en scripts de autoload
 
 Los scripts registrados como autoload (`EventBus`, `GridManager`,
@@ -81,6 +108,16 @@ chocar con nada.
 - **Tráfico simplificado**: sin pathfinding de vehículos individuales. Carga
   de tráfico como un valor 0-1 por tramo de carretera (`TrafficSimulator`).
 - **Sin multijugador.**
+- **Carreteras de un solo tile (Etapa 3)**: sin autotiling de curvas/T/cruce
+  todavía; mismo `RoadLayer`/`TileSet`, se agregaría después sin cambiar
+  arquitectura.
+- **`requires_road_adjacency` es adyacencia directa, no conectividad de
+  red** (Etapa 3): un edificio solo necesita una carretera en una celda
+  ortogonal/diagonalmente adyacente a su footprint, no un camino continuo
+  hasta un borde de la ciudad. Eso es tema de `ConnectivityGraph`/Transporte
+  (Etapa 7).
+- **Construcción y demolición son gratis hasta Etapa 5**: `BuildingManager`
+  no cobra fondos; `EconomyManager` real llega en Etapa 5.
 
 ## Riesgos activos a vigilar
 

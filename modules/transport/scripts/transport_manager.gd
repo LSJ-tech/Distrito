@@ -10,16 +10,23 @@ var _traffic := TrafficSimulator.new()
 
 
 func try_place_road(cell: Vector2i) -> bool:
-	# TODO Etapa 3: marcar la celda como carretera en GridManager, actualizar
-	# autotiling visual, reconstruir _connectivity y emitir EventBus.road_placed
-	# + road_network_changed.
-	return false
+	if not GridManager.is_road_placeable(cell):
+		return false
+	GridManager.set_road(cell, true)
+	EventBus.road_placed.emit(cell)
+	EventBus.road_network_changed.emit()
+	# TODO Etapa 7: reconstruir _connectivity cuando exista pathfinding de red real.
+	return true
 
 
 func try_remove_road(cell: Vector2i) -> bool:
-	# TODO Etapa 3: liberar la celda en GridManager, reconstruir _connectivity
-	# y emitir EventBus.road_removed + road_network_changed.
-	return false
+	var data := GridManager.get_cell(cell)
+	if data == null or not data.has_road:
+		return false
+	GridManager.set_road(cell, false)
+	EventBus.road_removed.emit(cell)
+	EventBus.road_network_changed.emit()
+	return true
 
 
 func is_cell_connected(cell: Vector2i) -> bool:

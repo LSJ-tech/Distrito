@@ -5,6 +5,8 @@ extends Control
 
 @onready var _population_label: Label = $VBoxContainer/PopulationLabel
 @onready var _funds_label: Label = $VBoxContainer/FundsLabel
+@onready var _save_button: Button = $VBoxContainer/SaveLoadRow/SaveButton
+@onready var _load_button: Button = $VBoxContainer/SaveLoadRow/LoadButton
 
 
 func _ready() -> void:
@@ -12,6 +14,8 @@ func _ready() -> void:
 	EventBus.funds_changed.connect(_on_funds_changed)
 	_on_population_changed(PopulationManager.get_total_population())
 	_on_funds_changed(EconomyManager.get_funds())
+	_save_button.pressed.connect(SaveManager.save_game.bind(SaveManager.DEFAULT_SAVE_PATH))
+	_load_button.pressed.connect(SaveManager.load_game.bind(SaveManager.DEFAULT_SAVE_PATH))
 
 
 func _on_population_changed(total: int) -> void:

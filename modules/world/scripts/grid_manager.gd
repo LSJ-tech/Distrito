@@ -86,10 +86,11 @@ func set_road(cell: Vector2i, value: bool) -> void:
 
 
 func get_save_data() -> Dictionary:
-	# TODO Etapa 8: serializar terrain_type/building_id/has_road por celda.
+	# Sin estado propio que guardar (Etapa 8): building_id/has_road se
+	# reconstruyen solos cuando TransportManager/BuildingManager reproducen
+	# sus propios datos guardados a través de try_place_road/try_place_building.
 	return {}
 
 
-func load_save_data(data: Dictionary) -> void:
-	# TODO Etapa 8: reconstruir cells a partir de los datos guardados.
+func load_save_data(_data: Dictionary) -> void:
 	pass

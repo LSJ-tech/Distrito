@@ -26,13 +26,14 @@ func get_housing_demand() -> int:
 
 
 func get_save_data() -> Dictionary:
-	# TODO Etapa 8: serializar total_population y estado agregado por zona.
-	return {}
+	return {"total_population": total_population}
 
 
 func load_save_data(data: Dictionary) -> void:
-	# TODO Etapa 8: restaurar total_population desde el save.
-	pass
+	# housing_capacity NO se guarda: se reconstruye sola cuando
+	# BuildingManager reproduce los edificios residenciales guardados.
+	total_population = int(data.get("total_population", 0))
+	EventBus.population_changed.emit(total_population)
 
 
 func _on_building_placed(data: BuildingData, _cell: Vector2i) -> void:

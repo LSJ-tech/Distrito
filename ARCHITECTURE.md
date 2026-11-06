@@ -1,10 +1,12 @@
 # DISTRITO — Arquitectura y convenciones
 
-Estudio: DEVQUAD GAMES. Motor: Godot 4.3+ (fijar y documentar aquí la versión
-exacta instalada antes de tocar `TileMapLayer`, cuya API cambió entre 4.0-4.2
-y 4.3+). Lenguaje: GDScript. Este documento complementa el plan técnico de
-Etapa 1 y registra las decisiones de arquitectura y sus porqués, para que
-cualquier cambio futuro (humano o IA) se revise contra esto.
+Estudio: DEVQUAD GAMES. Motor: Godot 4.7.2 (estable), la versión instalada y
+usada para desarrollar y validar el proyecto desde Etapa 1 — por encima de
+4.3+, que es el mínimo real por la API de `TileMapLayer` (cambió entre
+4.0-4.2 y 4.3+). Lenguaje: GDScript. Este documento complementa el plan
+técnico de cada etapa y registra las decisiones de arquitectura y sus
+porqués, para que cualquier cambio futuro (humano o IA) se revise contra
+esto.
 
 ## Patrón general
 
@@ -87,6 +89,57 @@ instancia recién creada con `PackedScene.instantiate()` pero todavía no
 añadida a la escena deja `_sprite` en `null`. Cualquier método que dependa
 de `@onready` en un nodo recién instanciado debe llamarse después de
 `add_child()`, nunca antes.
+
+## Decisión documentada: guardado "por receta" (Etapa 8)
+
+El save no es un snapshot completo de cada manager: `SaveManager` solo
+serializa qué se construyó y dónde (`TransportManager.get_save_data` →
+carreteras, `BuildingManager.get_save_data` → edificios por `id`+celda) y
+los 2 números que avanzan solos con el tiempo y no se pueden recalcular
+desde cero (`PopulationManager.total_population`, `EconomyManager.funds`+`tax_rate`).
+Al cargar, `SaveManager.load_game` **reproduce** esos datos llamando a
+`TransportManager.try_place_road`/`BuildingManager.try_place_building` —
+las mismas funciones que usa el jugador — en vez de restaurar cada manager
+por separado; esas llamadas ya disparan por `EventBus` todo lo que depende
+de construir/pavimentar (cobertura en `ServicesManager`, conectividad y
+tráfico en `TransportManager`, `housing_capacity` en `PopulationManager`,
+impuesto comercial y mantenimiento en `EconomyManager`). Por eso
+`GridManager` y `ServicesManager` no tienen datos propios que guardar —
+su `get_save_data`/`load_save_data` quedan como no-op documentado, no como
+TODO pendiente.
+
+**Orden de carga obligatorio** (`SaveManager.load_game`): `TransportManager`
+→ `BuildingManager` → `PopulationManager` → `EconomyManager`. Carreteras
+antes que edificios porque `requires_road_adjacency` necesita que la
+carretera ya exista para que la reproducción no se rechace a sí misma.
+`EconomyManager` al final porque fija el valor real de fondos, sobrescribiendo
+lo que haya dejado la reproducción de edificios.
+
+**Fondos temporalmente altos durante la carga**: `BuildingManager.try_place_building`
+rechaza si no alcanzan los fondos (regla de Etapa 5) — pero al cargar no
+estamos comprando de nuevo, solo restaurando. `SaveManager.load_game` sube
+`EconomyManager.funds` a un valor alto antes de reproducir edificios,
+exactamente para evitar ese rechazo; el valor real se fija al final, en el
+paso de `EconomyManager`.
+
+Se retiró `SaveManager._save_participants`/`register_participant` (stub de
+Etapa 1, nunca usado desde ningún `_ready()`): con 4 participantes fijos y
+un orden de carga obligatorio, nombrarlos directamente es más simple y más
+claro que iterar una lista genérica sin orden definido.
+
+## Revisión de rendimiento (Etapa 8)
+
+No hay nada que perfilar todavía a esta escala (grid 64×64, puñado de
+edificios). Revisión de los 3 únicos `_process()`/`_physics_process()` del
+proyecto (`camera_controller.gd`, `building_placer.gd`,
+`simulation_manager.gd`): los tres son O(1) por frame. Los recálculos caros
+(`ConnectivityGraph.rebuild`, `TrafficSimulator.recalculate`, cobertura de
+`ServicesManager`, O(grid) cada uno) están correctamente disparados por
+evento de construcción/carretera, nunca por frame ni en cada
+`simulation_tick` — los listeners del tick (`PopulationManager`,
+`EconomyManager`) son O(1). Sin cambios de código; se deja esta conclusión
+anotada para revisar de nuevo si el grid o la cantidad de edificios crecen
+mucho más adelante (Etapa 9+).
 
 ## Decisión documentada: gastos ligados a una acción del jugador (Etapa 5)
 

@@ -1,10 +1,10 @@
 extends Node
 
 ## Valida y ejecuta la colocación/demolición de edificios sobre el grid.
-## Única puerta de entrada al catálogo de BuildingData; nunca llama
-## directamente a EconomyManager ni PopulationManager, solo emite eventos
-## por EventBus para que esos módulos reaccionen si les interesa.
-## No cobra fondos todavía: EconomyManager real es Etapa 5.
+## Única puerta de entrada al catálogo de BuildingData; solo consulta
+## EconomyManager.get_funds() (lectura) para validar, nunca le ordena
+## gastar directamente — el descuento ocurre reactivamente en EconomyManager
+## al escuchar building_placed (ver ARCHITECTURE.md, Etapa 5).
 
 const BUILDINGS_PATH: String = "res://data/buildings"
 const BUILDING_BASE_SCENE: PackedScene = preload("res://modules/construction/scenes/building_base.tscn")
@@ -100,10 +100,28 @@ func _buildings_layer() -> Node2D:
 
 
 func get_save_data() -> Dictionary:
-	# TODO Etapa 8: serializar lista de (building_id, cell) colocados.
-	return {}
+	var buildings: Array = []
+	for origin in placed_buildings:
+		var data: BuildingData = placed_buildings[origin]["data"]
+		buildings.append({"id": String(data.id), "cell": [origin.x, origin.y]})
+	return {"buildings": buildings}
 
 
 func load_save_data(data: Dictionary) -> void:
-	# TODO Etapa 8: reconstruir edificios colocados a partir del save.
-	pass
+	# Demoler lo actual (misma cascada de eventos que al jugar).
+	for origin in placed_buildings.keys().duplicate():
+		try_demolish(origin)
+	# Reproducir lo guardado. int(): JSON no distingue int/float al
+	# parsear, y Vector2i exige enteros.
+	for entry in data.get("buildings", []):
+		var building_data := _find_by_id(StringName(entry["id"]))
+		if building_data != null:
+			var cell := Vector2i(int(entry["cell"][0]), int(entry["cell"][1]))
+			try_place_building(building_data, cell)
+
+
+func _find_by_id(id: StringName) -> BuildingData:
+	for data in catalog:
+		if data.id == id:
+			return data
+	return null

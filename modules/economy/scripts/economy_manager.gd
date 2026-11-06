@@ -45,13 +45,17 @@ func set_tax_rate(rate: float) -> void:
 
 
 func get_save_data() -> Dictionary:
-	# TODO Etapa 8: serializar funds y allocations de _budget.
-	return {}
+	return {"funds": funds, "tax_rate": tax_rate}
 
 
 func load_save_data(data: Dictionary) -> void:
-	# TODO Etapa 8: restaurar funds y _budget desde el save.
-	pass
+	# _commercial_tax_revenue y _budget NO se guardan: se reconstruyen solos
+	# cuando BuildingManager reproduce los edificios guardados. Esto corre
+	# al final de la carga (después de reproducir edificios), así que fija
+	# el valor real de fondos por sobre el que haya dejado esa reproducción.
+	funds = int(data.get("funds", GameConstants.STARTING_FUNDS))
+	tax_rate = float(data.get("tax_rate", 1.0))
+	EventBus.funds_changed.emit(funds)
 
 
 func _on_building_placed(data: BuildingData, _cell: Vector2i) -> void:

@@ -43,13 +43,28 @@ func get_traffic_load(cell: Vector2i) -> float:
 
 
 func get_save_data() -> Dictionary:
-	# TODO Etapa 8: serializar celdas con carretera.
-	return {}
+	var roads: Array = []
+	for x in GameConstants.GRID_WIDTH:
+		for y in GameConstants.GRID_HEIGHT:
+			var cell := Vector2i(x, y)
+			var data := GridManager.get_cell(cell)
+			if data != null and data.has_road:
+				roads.append([x, y])
+	return {"roads": roads}
 
 
 func load_save_data(data: Dictionary) -> void:
-	# TODO Etapa 8: reconstruir red de carreteras y _connectivity.
-	pass
+	# Limpiar la red actual (misma cascada de eventos que al jugar).
+	for x in GameConstants.GRID_WIDTH:
+		for y in GameConstants.GRID_HEIGHT:
+			var cell := Vector2i(x, y)
+			var cell_data := GridManager.get_cell(cell)
+			if cell_data != null and cell_data.has_road:
+				try_remove_road(cell)
+	# Reproducir la red guardada. int(): JSON no distingue int/float al
+	# parsear, y Vector2i exige enteros.
+	for entry in data.get("roads", []):
+		try_place_road(Vector2i(int(entry[0]), int(entry[1])))
 
 
 func _on_road_network_changed() -> void:

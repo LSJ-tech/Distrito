@@ -30,12 +30,13 @@ func trigger_emergency(emergency_type: GameEnums.EmergencyType, cell: Vector2i) 
 
 
 func get_save_data() -> Dictionary:
-	# TODO Etapa 8: serializar edificios de servicio y su cobertura calculada.
+	# Sin estado propio que guardar (Etapa 8): _coverage_counts se reconstruye
+	# solo cuando BuildingManager reproduce los edificios cívicos guardados
+	# (cada building_placed recalcula la cobertura de ese edificio).
 	return {}
 
 
-func load_save_data(data: Dictionary) -> void:
-	# TODO Etapa 8: reconstruir cobertura desde el save.
+func load_save_data(_data: Dictionary) -> void:
 	pass
 
 

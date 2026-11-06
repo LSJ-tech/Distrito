@@ -121,6 +121,32 @@ panel de información todavía — eso es Etapa 8 ("interfaz"), no servicios.
 `get_coverage_at` ya está listo para que esa UI lo consuma cuando se
 construya.
 
+## Decisión documentada: conectividad, tráfico y emergencias (Etapa 7)
+
+- **"Conectado" = la componente de carreteras de esa celda toca el borde
+  del grid 64×64**, simulando una salida de la ciudad. No hay marcadores de
+  "salida" definidos en ningún sistema todavía; el borde del mapa es un
+  proxy razonable para el MVP — revisar si más adelante se agregan salidas
+  explícitas, lo que cambiaría la condición en `ConnectivityGraph.rebuild`.
+- **Carga de tráfico = edificios ortogonalmente adyacentes a ese tramo**,
+  normalizada contra una capacidad fija (`TrafficSimulator.ROAD_CAPACITY`).
+  No es flujo origen-destino ni pathfinding (restricción de diseño ya
+  existente); es una fórmula local y barata de calcular.
+- **Recalculo completo, no incremental**, en `ConnectivityGraph.rebuild()`
+  y `TrafficSimulator.recalculate()`: recorren el grid completo (4096
+  celdas) en cada evento relevante (`road_network_changed`,
+  `building_placed`/`demolished`), nunca por frame. A esta escala es barato
+  y evita bugs de sincronización como el que forzó pasar a conteos en
+  Etapa 6 (cobertura de servicios).
+- `EmergencyDispatcher.dispatch` consulta `TransportManager.is_cell_connected`
+  directamente — dependencia ya permitida desde el grafo de Etapa 1
+  (Emergencias → Transporte), no es una excepción nueva.
+- **Sin forma de disparar una emergencia desde el juego todavía.**
+  `ServicesManager.trigger_emergency` ya funciona correctamente para quien
+  la llame, pero qué la dispara (evento aleatorio, acción del jugador) no
+  está definido en ningún sistema — queda para cuando se defina, probable
+  junto a Eventos urbanos (Etapa 11).
+
 ## Decisión documentada: `class_name` en scripts de autoload
 
 Los scripts registrados como autoload (`EventBus`, `GridManager`,

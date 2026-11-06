@@ -9,13 +9,18 @@ var _connectivity := ConnectivityGraph.new()
 var _traffic := TrafficSimulator.new()
 
 
+func _ready() -> void:
+	EventBus.road_network_changed.connect(_on_road_network_changed)
+	EventBus.building_placed.connect(_on_building_changed)
+	EventBus.building_demolished.connect(_on_building_changed)
+
+
 func try_place_road(cell: Vector2i) -> bool:
 	if not GridManager.is_road_placeable(cell):
 		return false
 	GridManager.set_road(cell, true)
 	EventBus.road_placed.emit(cell)
 	EventBus.road_network_changed.emit()
-	# TODO Etapa 7: reconstruir _connectivity cuando exista pathfinding de red real.
 	return true
 
 
@@ -45,3 +50,12 @@ func get_save_data() -> Dictionary:
 func load_save_data(data: Dictionary) -> void:
 	# TODO Etapa 8: reconstruir red de carreteras y _connectivity.
 	pass
+
+
+func _on_road_network_changed() -> void:
+	_connectivity.rebuild()
+	_traffic.recalculate()
+
+
+func _on_building_changed(_data: BuildingData, _cell: Vector2i) -> void:
+	_traffic.recalculate()

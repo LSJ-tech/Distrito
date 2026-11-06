@@ -34,6 +34,8 @@ func try_place_building(data: BuildingData, cell: Vector2i) -> bool:
 		return false
 	if data.requires_road_adjacency and not GridManager.is_adjacent_to_road(cell, data.footprint):
 		return false
+	if EconomyManager.get_funds() < data.cost:
+		return false
 
 	GridManager.place_building_ref(cell, data.id, data.footprint)
 	var instance := _instantiate_building(data, cell)

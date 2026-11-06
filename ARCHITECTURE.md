@@ -88,6 +88,22 @@ añadida a la escena deja `_sprite` en `null`. Cualquier método que dependa
 de `@onready` en un nodo recién instanciado debe llamarse después de
 `add_child()`, nunca antes.
 
+## Decisión documentada: gastos ligados a una acción del jugador (Etapa 5)
+
+`BuildingManager.try_place_building` necesita saber **sincrónicamente** si
+alcanzan los fondos antes de colocar un edificio (para poder rechazar la
+colocación en el mismo llamado). El grafo de dependencias prohíbe que
+Construcción llame directo a `EconomyManager.try_spend()`. Se resuelve así:
+`BuildingManager` solo **lee** `EconomyManager.get_funds()` (una consulta,
+no una mutación) para validar; el descuento real ocurre **reactivamente**
+dentro de `EconomyManager`, que escucha `EventBus.building_placed` igual
+que `PopulationManager` ya hace con la capacidad habitacional. Como las
+señales de Godot se emiten de forma síncrona, el descuento ya ocurrió
+cuando `try_place_building` retorna. Patrón a seguir para cualquier costo
+futuro ligado a una acción del jugador: el módulo que origina la acción
+solo **consulta** (lectura), nunca **ordena** el gasto/cambio en otro
+manager; quien posee el estado reacciona al evento.
+
 ## Decisión documentada: `class_name` en scripts de autoload
 
 Los scripts registrados como autoload (`EventBus`, `GridManager`,
@@ -116,8 +132,11 @@ chocar con nada.
   ortogonal/diagonalmente adyacente a su footprint, no un camino continuo
   hasta un borde de la ciudad. Eso es tema de `ConnectivityGraph`/Transporte
   (Etapa 7).
-- **Construcción y demolición son gratis hasta Etapa 5**: `BuildingManager`
-  no cobra fondos; `EconomyManager` real llega en Etapa 5.
+- **Sin reembolso al demoler (Etapa 5)**: demoler no devuelve el costo de
+  construcción, simplificación deliberada común en city-builders.
+- **Sin bancarrota ni corte de servicios por deuda (Etapa 5)**: los fondos
+  pueden quedar negativos; no hay consecuencias de juego todavía, no está
+  definido en el alcance.
 
 ## Riesgos activos a vigilar
 

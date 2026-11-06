@@ -6,5 +6,5 @@ extends RefCounted
 ## (recibe los datos que necesita como parámetros, para ser fácil de testear).
 
 func calculate_income(population: int, commercial_tax_revenue: int, tax_rate: float) -> int:
-	# TODO Etapa 5: fórmula real de ingresos (población, comercio, tasa de impuesto).
-	return 0
+	var residential_income := population * GameConstants.RESIDENTIAL_TAX_PER_CAPITA
+	return roundi((residential_income + commercial_tax_revenue) * tax_rate)

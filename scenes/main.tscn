@@ -1,9 +1,11 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="PackedScene" path="res://modules/world/scenes/world.tscn" id="1"]
+[ext_resource type="Script" path="res://modules/world/scripts/camera_controller.gd" id="2"]
 
 [node name="Main" type="Node2D"]
 
 [node name="Camera2D" type="Camera2D" parent="."]
+script = ExtResource("2")
 
 [node name="World" parent="." instance=ExtResource("1")]

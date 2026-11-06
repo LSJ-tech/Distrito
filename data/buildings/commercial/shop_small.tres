@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CommercialBuildingData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/resources/commercial_building_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"shop_small"
+display_name = "Tienda pequeña"
+category = 1
+footprint = Vector2i(1, 1)
+cost = 800
+maintenance_cost = 15
+requires_road_adjacency = true
+jobs_commercial = 3
+tax_revenue = 20

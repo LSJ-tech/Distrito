@@ -1,0 +1,9 @@
+[gd_scene load_steps=1 format=3]
+
+[node name="World" type="Node2D"]
+
+[node name="TerrainLayer" type="TileMapLayer" parent="."]
+
+[node name="RoadLayer" type="TileMapLayer" parent="."]
+
+[node name="BuildingsLayer" type="Node2D" parent="."]

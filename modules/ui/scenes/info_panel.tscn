@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://modules/ui/scripts/info_panel_controller.gd" id="1"]
+
+[node name="InfoPanel" type="Control"]
+script = ExtResource("1")

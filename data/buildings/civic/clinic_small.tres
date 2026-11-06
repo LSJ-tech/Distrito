@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CivicBuildingData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/resources/civic_building_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"clinic_small"
+display_name = "Posta de salud"
+category = 3
+footprint = Vector2i(2, 2)
+cost = 3000
+maintenance_cost = 60
+requires_road_adjacency = true
+service_radius = 8
+service_type = 0

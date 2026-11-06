@@ -1,0 +1,41 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[animation]
+
+compatibility/default_parent_skeleton_in_mesh_instance_3d=true
+
+[application]
+
+config/name="DISTRITO"
+config/description="City builder isométrico — DEVQUAD GAMES"
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.7", "Forward Plus")
+config/icon="res://icon.svg"
+
+[autoload]
+
+EventBus="*res://autoloads/event_bus.gd"
+GameState="*res://autoloads/game_state.gd"
+SimulationManager="*res://autoloads/simulation_manager.gd"
+GridManager="*res://modules/world/scripts/grid_manager.gd"
+BuildingManager="*res://modules/construction/scripts/building_manager.gd"
+TransportManager="*res://modules/transport/scripts/transport_manager.gd"
+PopulationManager="*res://modules/population/scripts/population_manager.gd"
+EconomyManager="*res://modules/economy/scripts/economy_manager.gd"
+ServicesManager="*res://modules/services/scripts/services_manager.gd"
+CityEventsManager="*res://modules/events/scripts/city_events_manager.gd"
+SaveManager="*res://autoloads/save_manager.gd"
+
+[display]
+
+window/size/viewport_width=1920
+window/size/viewport_height=1080
+window/stretch/mode="canvas_items"

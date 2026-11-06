@@ -1,0 +1,6 @@
+[gd_scene load_steps=1 format=3]
+
+[node name="MainMenu" type="Control"]
+
+[node name="Label" type="Label" parent="."]
+text = "DISTRITO"

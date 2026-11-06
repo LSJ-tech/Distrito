@@ -10,14 +10,17 @@ const TILE_ATLAS_COORDS: Vector2i = Vector2i(0, 0)
 @onready var _terrain_layer: TileMapLayer = $TerrainLayer
 @onready var _road_layer: TileMapLayer = $RoadLayer
 @onready var _buildings_layer: Node2D = $BuildingsLayer
+@onready var _overlay_layer: Node2D = $OverlayLayer
 
 
 func _ready() -> void:
 	# Grupos asignados por código (no en el .tscn): permiten que BuildingManager,
-	# BuildingPlacer y DemolitionHandler encuentren estos nodos sin depender de
-	# una ruta relativa fija ni del orden de _ready() entre ramas del árbol.
+	# BuildingPlacer, DemolitionHandler, InfoPanel y OverlayLayer encuentren
+	# estos nodos sin depender de una ruta relativa fija ni del orden de
+	# _ready() entre ramas del árbol.
 	_terrain_layer.add_to_group("terrain_layer")
 	_buildings_layer.add_to_group("buildings_layer")
+	_overlay_layer.add_to_group("overlay_layer")
 	_paint_terrain()
 	EventBus.road_placed.connect(_on_road_placed)
 	EventBus.road_removed.connect(_on_road_removed)

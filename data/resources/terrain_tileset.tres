@@ -1,7 +1,7 @@
-[gd_resource type="TileSet" load_steps=5 format=3]
+[gd_resource type="TileSet" format=3 uid="uid://c6ukfw1o0llc7"]
 
-[ext_resource type="Texture2D" path="res://assets/sprites/terrain/grass_tile.svg" id="1"]
-[ext_resource type="Texture2D" path="res://assets/sprites/terrain/road_tile.svg" id="2"]
+[ext_resource type="Texture2D" uid="uid://cctxth3lvwq27" path="res://assets/sprites/terrain/grass_tile.svg" id="1"]
+[ext_resource type="Texture2D" uid="uid://cnncaj2popi3q" path="res://assets/sprites/terrain/road_tile.svg" id="2"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_grass"]
 texture = ExtResource("1")

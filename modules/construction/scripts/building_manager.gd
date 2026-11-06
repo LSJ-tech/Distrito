@@ -114,13 +114,13 @@ func load_save_data(data: Dictionary) -> void:
 	# Reproducir lo guardado. int(): JSON no distingue int/float al
 	# parsear, y Vector2i exige enteros.
 	for entry in data.get("buildings", []):
-		var building_data := _find_by_id(StringName(entry["id"]))
+		var building_data := get_building_data(StringName(entry["id"]))
 		if building_data != null:
 			var cell := Vector2i(int(entry["cell"][0]), int(entry["cell"][1]))
 			try_place_building(building_data, cell)
 
 
-func _find_by_id(id: StringName) -> BuildingData:
+func get_building_data(id: StringName) -> BuildingData:
 	for data in catalog:
 		if data.id == id:
 			return data

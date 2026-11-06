@@ -127,6 +127,44 @@ Etapa 1, nunca usado desde ningún `_ready()`): con 4 participantes fijos y
 un orden de carga obligatorio, nombrarlos directamente es más simple y más
 claro que iterar una lista genérica sin orden definido.
 
+## Decisión documentada: overlay visual y panel de información (pendiente de Etapa 8)
+
+- **`OverlayLayer`** (`modules/world/scripts/overlay_layer.gd`, nodo al final
+  de `world.tscn` para quedar sobre terreno/carreteras/edificios) dibuja con
+  `_draw()` un rombo semi-transparente por celda según el modo activo:
+  **Cobertura** (verde si *algún* `ServiceType` cubre la celda, sin
+  distinguir cuál — con un solo tipo de edificio cívico de prueba hasta
+  ahora, no hay mucho que distinguir todavía; se puede separar por tipo más
+  adelante sin cambiar la arquitectura) o **Tráfico** (gradiente
+  verde→rojo según `TransportManager.get_traffic_load`, solo celdas con
+  carretera). Redibuja (`queue_redraw()`) al cambiar de modo y, si hay un
+  modo activo, al escuchar los eventos que podrían cambiar lo que muestra
+  — nunca por frame.
+- **Tiene `class_name OverlayLayer`** a pesar de no ser autoload (es un
+  nodo de escena normal, instanciado una vez en `world.tscn`): no hay
+  conflicto porque no hay ningún autoload con ese nombre — la regla de
+  evitar `class_name` solo aplica a scripts registrados en `[autoload]`.
+- **Encuentra `TerrainLayer` por grupo en cada `_draw()`/`_ready()`, nunca
+  en `@onready`**: `OverlayLayer` es hijo de `World`, y `World._ready()`
+  (que registra el grupo `"terrain_layer"` por código) corre *después* que
+  todos sus hijos — mismo motivo ya documentado para `BuildingPlacer`
+  (Etapa 3) e `InfoPanel` (aquí mismo). Cachear la referencia en
+  `@onready` la dejaría siempre en `null`.
+- **Bug real encontrado**: `EventBus.service_coverage_changed(service_type)`
+  manda un argumento; conectarlo a un handler de 0 argumentos (reusando el
+  mismo de `road_network_changed`) revienta en runtime con "Method expected
+  0 argument(s), but called with 1" la primera vez que se dispara. Cada
+  señal necesita un handler con la firma exacta — no asumir que "evento sin
+  payload relevante" significa "sin argumentos" sin revisar la firma real
+  en `event_bus.gd`.
+- **`InfoPanel`** (`modules/ui/scripts/info_panel_controller.gd`, ahora
+  instanciado en `main.tscn`) tiene el mismo problema de orden que
+  `OverlayLayer`/`BuildingPlacer`: busca `TerrainLayer` por grupo en cada
+  `_process()`, nunca lo cachea.
+- `BuildingManager._find_by_id` (privado) pasó a `get_building_data` público:
+  ahora lo usa también `InfoPanel` para mostrar el nombre del edificio bajo
+  el cursor a partir de su `id` guardado en `CellData`.
+
 ## Revisión de rendimiento (Etapa 8)
 
 No hay nada que perfilar todavía a esta escala (grid 64×64, puñado de
